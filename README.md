@@ -4,7 +4,7 @@ An end-to-end pipeline that decodes a person's imagined movement directly from t
 
 ## Overview
 
-A Brain-Computer Interface (BCI) lets a person control a device using brain activity alone, with no physical movement required. This project builds one from the ground up: real EEG data is recorded while a person imagines moving their left hand, right hand, or feet; a machine learning model learns to decode which movement is being imagined from the raw brain signal; and a Kalman filter smooths the model's noisy, real-time predictions into a stable control signal that drives a simulated robotic arm.
+A Brain-Computer Interface (BCI) lets a person control a device using brain activity alone, with no physical movement required. This project builds one from the ground up: real EEG data is recorded while a person imagines moving their left or right fist; a machine learning model learns to decode which movement is being imagined from the raw brain signal; and a Kalman filter smooths the model's noisy, real-time predictions into a stable control signal that drives a simulated robotic arm sorting objects into bins.
 
 The project is built around real, publicly available EEG data rather than synthetic signals, which introduces a genuinely harder and more realistic problem than a clean simulation: brain signals are noisy, vary from person to person, and never produce perfectly separable classes. Working with that messiness honestly, rather than chasing an unrealistically clean result, is part of the point.
 
@@ -37,19 +37,61 @@ The project is built around real, publicly available EEG data rather than synthe
 
 ![Kalman results](images/kalman_subject_comparison.png)
 
-### Phase 4 — Simulated Robotic Arm Control
-`notebooks/04_robotic_arm_control.ipynb` *(planned)*
+### Phase 4 — Brain-Controlled Sorting Task ✅
+`notebooks/04_robotic_arm_control.ipynb`
 
-- Builds a simple simulated robotic arm in Python.
-- Maps the Kalman-filtered movement intent into actual arm movement commands, closing the loop from raw brain signal to robotic motion.
-- Visualizes the full pipeline running end-to-end: EEG in, robot arm movement out.
+The filtered intent signal drives a simulated 3-joint robotic arm that **sorts objects into a left or right bin**. The person imagines a left or right fist, and the hand slides toward the matching bin like a joystick: the decoded intent sets the hand's *speed*, and a small deadzone means weak evidence does nothing. When the hand reaches a bin, that counts as a selection.
+
+![Brain-controlled sorting demo](images/sorting_demo.gif)
+
+*Same brain signal, two arms: raw decoder (left) vs. Kalman-filtered (right). First 8 trials of subject 2, shown in order, not hand-picked.*
+
+- **Closed loop:** EEG → decoder → Kalman filter → hand velocity → inverse kinematics → arm.
+
+  ![Control loop](images/arm_control_loop.png)
+- **Control:** hand velocity = g · deadzone(x̂), with gain g = 1.5 and deadzone d = 0.3, both fixed in advance rather than tuned on results. The hand and the filter reset at every cue.
+- **Inverse kinematics:** for a hand target, the base yaw, shoulder and elbow angles are solved in closed form (law of cosines, elbow-up), so the arm follows the hand smoothly.
+
+  ![Inverse kinematics geometry](images/ik_geometry.png)
+- **Task metrics:** correct / wrong / no selection, time to select, information transfer rate (Wolpaw ITR), and *wobble*, which measures how much the commanded speed jitters beyond its net change.
+
+**Results: five subjects, 45 trials each (decoded out-of-fold)**
+
+| Arm | Correct | Wrong | No selection | Time to select | ITR (bits/min) | Wobble |
+|---|---|---|---|---|---|---|
+| Raw decoder | 56.0% | 18.2% | 25.8% | 2.93 s | 4.4 | 1.248 |
+| Kalman (never reset) | 48.9% | 12.9% | 38.2% | 3.09 s | 3.5 | 0.492 |
+| **Kalman (reset at cue)** | 51.6% | 12.4% | 36.0% | 3.02 s | 4.4 | 0.548 |
+
+| Subject | Correct (raw) | Correct (Kalman) | Wobble (raw) | Wobble (Kalman) |
+|---|---|---|---|---|
+| 7 | 95.6% | 95.6% | 0.223 | 0.137 |
+| 2 | 80.0% | 80.0% | 0.738 | 0.406 |
+| 1 | 31.1% | 28.9% | 1.442 | 0.644 |
+| 3 | 31.1% | 24.4% | 1.442 | 0.559 |
+| 5 | 42.2% | 28.9% | 2.397 | 0.993 |
+
+![Subject benchmark](images/arm_subject_benchmark.png)
+
+**Takeaways**
+
+- The Kalman filter makes the arm about **56% steadier** and cuts wrong selections from 18.2% to 12.4%. The arm holds still when the evidence is shaky instead of committing.
+- The price is fewer correct selections (56.0% → 51.6%) and about 0.1 s more time per selection. With reset at each cue, ITR matches the raw decoder.
+- The arm works well for subjects with a decodable signal (subjects 7 and 2) and **not at all for subjects 1, 3 and 5**, whose decoders are near chance. Smoothing cannot create information that isn't in the signal.
+
+## Limitations
+
+- Everything is simulated and replayed offline from recorded EEG. There is no live closed loop and no physical arm.
+- The Kalman noise term R is calibrated using the true labels, and the process noise Q was tuned on subject 7 only.
+- ITR ignores the rest periods between trials, so it is an upper bound.
+- Decoder quality varies enormously between people: the pipeline works for some subjects and fails for others.
 
 ## Key Concepts Demonstrated
 
 - EEG signal processing: filtering, epoching, and artifact handling
 - Brain-computer interface (BCI) motor-imagery classification
 - Kalman filtering for real-time noise reduction and state estimation
-- Simulated robotic kinematics and control
+- Inverse kinematics, closed-loop control, and information transfer rate (ITR) for a simulated arm
 - Working with real, noisy, human-subject data rather than synthetic/simulated signals
 
 ## Data
@@ -73,4 +115,4 @@ Then open any notebook in VS Code or Jupyter and run the cells from top to botto
 - ✅ Phase 1 complete
 - ✅ Phase 2 complete
 - ✅ Phase 3 complete
-- 🚧 Phase 4 planned
+- ✅ Phase 4 complete
