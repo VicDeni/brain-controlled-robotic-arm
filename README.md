@@ -8,22 +8,24 @@ A Brain-Computer Interface (BCI) lets a person control a device using brain acti
 
 The project is built around real, publicly available EEG data rather than synthetic signals, which introduces a genuinely harder and more realistic problem than a clean simulation: brain signals are noisy, vary from person to person, and never produce perfectly separable classes. Working with that messiness honestly, rather than chasing an unrealistically clean result, is part of the point.
 
+![Pipeline](images/bci_pipeline.png)
+
 ## Project Structure
 
-### Phase 1 — EEG Signal Processing & Exploration
-`notebooks/01_eeg_preprocessing_exploration.ipynb` *(planned)*
+### Phase 1 — EEG Signal Processing & Exploration ✅
+`notebooks/01_eeg_preprocessing_exploration.ipynb`
 
-- Loads real motor-imagery EEG recordings from the PhysioNet EEG Motor Movement/Imagery Dataset via the MNE-Python library.
-- Explains what an EEG signal actually is and how it's recorded.
-- Applies filtering (bandpass/notch) to clean the raw signal and remove noise.
-- Segments the continuous recording into labeled trials (left hand, right hand, feet, rest) and visualizes what imagined-movement brain activity looks like.
+- Loads real motor-imagery EEG (PhysioNet EEG Motor Movement/Imagery Dataset) via MNE-Python.
+- Applies an 8–30 Hz bandpass filter and cuts the recording into labeled left-fist / right-fist trials.
+- Shows event-related desynchronization (ERD): the mu/beta rhythm weakens over the motor cortex during imagined movement.
 
-### Phase 2 — Movement Intent Classification
-`notebooks/02_movement_classification.ipynb` *(planned)*
+### Phase 2 — Movement Intent Classification ✅
+`notebooks/02_movement_classification.ipynb`
 
-- Extracts features from the cleaned EEG signal (e.g. band power, spatial patterns).
-- Trains a classifier to decode which movement a person is imagining from their brain activity alone.
-- Evaluates real-world classification accuracy on held-out data, with an honest discussion of what realistic BCI performance looks like.
+- Extracts features with Common Spatial Patterns (CSP) and classifies with Linear Discriminant Analysis.
+- Evaluates honestly with repeated cross-validation, with CSP fit inside each fold, plus a permutation test.
+- Results: **71.8%** for subject 1 (p = 0.03, chance ≈ 51%); **59.7% ± 19.1%** averaged over subjects 1–10, ranging from chance to 98% depending on the person.
+- Tests whether covariance shrinkage helps (it doesn't) and reports that honestly.
 
 ### Phase 3 — Kalman Filter Smoothing
 `notebooks/03_kalman_filter_smoothing.ipynb` *(planned)*
@@ -64,7 +66,7 @@ Then open any notebook in VS Code or Jupyter and run the cells from top to botto
 
 ## Status
 
-- 🚧 Phase 1 planned
-- 🚧 Phase 2 planned
+- ✅ Phase 1 complete
+- ✅ Phase 2 complete
 - 🚧 Phase 3 planned
 - 🚧 Phase 4 planned
