@@ -27,11 +27,15 @@ The project is built around real, publicly available EEG data rather than synthe
 - Results: **71.8%** for subject 1 (p = 0.03, chance ≈ 51%); **59.7% ± 19.1%** averaged over subjects 1–10, ranging from chance to 98% depending on the person.
 - Tests whether covariance shrinkage helps (it doesn't) and reports that honestly.
 
-### Phase 3 — Kalman Filter Smoothing
-`notebooks/03_kalman_filter_smoothing.ipynb` *(planned)*
+### Phase 3 — Kalman Filter Smoothing ✅
+`notebooks/03_kalman_filter_smoothing.ipynb`
 
-- Treats the classifier's raw, noisy, trial-by-trial predictions as a noisy signal in their own right.
-- Applies a Kalman filter to smooth this prediction stream into a stable estimate of intended movement over time, reducing erratic, single-trial misclassifications from translating directly into erratic robot movement.
+- Turns the decoder into a real-time stream: a sliding 1.5 s window, one guess every 0.1 s, evaluated out-of-sample by splitting on trials.
+- Applies a 1-D Kalman filter (the same predict/update structure as the orbital project) to the stream of guesses.
+- Across five subjects it cuts output jitter by 19–57% and mid-trial slips by 22–46% with almost no added delay, without changing accuracy. Smoothing steadies a decoder but can't make a chance-level one correct.
+- Reports the smoothness vs. speed trade-off by sweeping the process noise Q.
+
+![Kalman results](images/kalman_subject_comparison.png)
 
 ### Phase 4 — Simulated Robotic Arm Control
 `notebooks/04_robotic_arm_control.ipynb` *(planned)*
@@ -68,5 +72,5 @@ Then open any notebook in VS Code or Jupyter and run the cells from top to botto
 
 - ✅ Phase 1 complete
 - ✅ Phase 2 complete
-- 🚧 Phase 3 planned
+- ✅ Phase 3 complete
 - 🚧 Phase 4 planned
