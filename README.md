@@ -35,7 +35,6 @@ The project is built around real, publicly available EEG data rather than synthe
 - Across five subjects it cuts output jitter by 19–57% and mid-trial slips by 22–46% with almost no added delay, without changing accuracy. Smoothing steadies a decoder but can't make a chance-level one correct.
 - Reports the smoothness vs. speed trade-off by sweeping the process noise Q.
 
-![Kalman results](images/kalman_subject_comparison.png)
 
 ### Phase 4 — Brain-Controlled Sorting Task ✅
 `notebooks/04_robotic_arm_control.ipynb`
@@ -71,7 +70,7 @@ The filtered intent signal drives a simulated 3-joint robotic arm that **sorts o
 | 3 | 31.1% | 24.4% | 1.442 | 0.559 |
 | 5 | 42.2% | 28.9% | 2.397 | 0.993 |
 
-![Subject benchmark](images/arm_subject_benchmark.png)
+
 
 **Takeaways**
 
